@@ -14,7 +14,10 @@ class CookedFood:
         self.buff        = kwargs.get("buff", "")
         self.weight      = kwargs.get("weight", 1)
         self.chance      = kwargs.get("chance", 1.0)
+        self.modchance   = kwargs.get("modchance", 1.0)
         self.time        = kwargs.get("time", 10.0)
+        self.xp          = kwargs.get("xp", 0.0)
+        self.difficulty  = kwargs.get("difficulty", 0.0)
         self.ingredients = kwargs.get("ingredients", [])
 
 class Food:
@@ -76,13 +79,17 @@ class Food:
                 break
 
         # With the recipe selected, lets calculate the bonus
-        lvlBonus = np.floor( self.level/30 - 1 )
-        tagBonus = min([v for k,v in tags.items()])
-        bonus    = lvlBonus + tagBonus
-        hp       = (bonus+1)*hp
-        stacks   = (bonus*2 + 1)
-        buff     = buffs[0] if len(buffs)>0 else ""
-        cooktime = 4**(0.95+0.05*weight)
+        lvlBonus   = np.floor( self.level/30 - 1 )
+        tagBonus   = min([v for k,v in tags.items()])
+        bonus      = lvlBonus + tagBonus
+        hp         = (bonus+1)*hp
+        stacks     = (bonus*2 + 1)
+        buff       = buffs[0] if len(buffs)>0 else ""
+        cooktime   = 4**(0.95+0.05*weight)
+        experience = np.sum([ self.ingredients[x]["exp"] for x in inglist ])
+        difficulty = np.sum([ self.ingredients[x]["difficulty"] for x in inglist ])
+        burn       = max(0, min(1, (100 - 3*(difficulty)**2.5/self.level)/100))
+        burnEnchant= max(0, min(1, (100 - 3*(difficulty)**2.5/self.level+4*8+self.level*0.2)/100))
         if verbose:
             print(f'{recipe}')
             print(f'>> Bonus: {lvlBonus} + {tagBonus} = {bonus}')
@@ -90,8 +97,11 @@ class Food:
             print(f'>> Stacks: {stacks}')
             print(f'>> Buff: {buff}')
 
+        #if( recipe == 'Pudding' ):
+        #    print(f'{inglist}')
         retVal = CookedFood(name=recipe, bonus=bonus, hp=hp, stacks=stacks, 
-                            buff=buff, ingredients=inglist)
+                            buff=buff, ingredients=inglist, chance=burn, time=cooktime,
+                            modchance=burnEnchant)
         return retVal
 
 

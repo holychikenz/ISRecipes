@@ -66,12 +66,16 @@ app.layout = html.Div(children=[
     html.P(id="effLvl"),
     html.P(id="fName"),
     html.P(id="fHP"),
-    html.P(id="fStack")
+    html.P(id="fStack"),
+    html.P(id="fTime"),
+    html.P(id="fChance")
 ])
 @app.callback(
         Output('fName', 'children'),
         Output('fHP', 'children'),
         Output('fStack', 'children'),
+        Output('fTime', 'children'),
+        Output('fChance', 'children'),
         Input('ing1', 'value'),
         Input('ing2', 'value'),
         Input('ing3', 'value'),
@@ -88,7 +92,7 @@ def update_food(i1, i2, i3, i4, i5, elvl, clvl, llvl):
         ret = chef.cook( ilist )
         return format_response(ret)
     else:
-        return '', '', ''
+        return '', '', '', '', ''
 
 @app.callback(
         Output('effLvl', 'children'),
@@ -101,7 +105,7 @@ def update_chef(a, b):
 
 def format_response( x ):
     buffTxt = f'Stacks: {int(x.stacks)} of {x.buff}' if x.buff != "" else ""
-    return f'{x.name} +{int(x.bonus)}', f'HP: {int(x.hp)}', f'{buffTxt}'
+    return f'{x.name} +{int(x.bonus)}', f'HP: {int(x.hp)}', f'{buffTxt}', f'Cook Time: {x.time:0.2f}', f'Chance: {x.chance:0.2f} ({x.modchance:0.2f})'
 
 if __name__ == "__main__":
     app.run_server(debug=False)
